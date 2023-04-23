@@ -1,0 +1,55 @@
+{% extends "base.html" %} {% from "macros.jinja" import window_vars with context
+%}
+{% block scripts %} {{ window_vars(user) }} 
+
+{# <script src='https://meet.jit.si/external_api.js'></script> #}
+{# 
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://meet.jit.si/libs/lib-jitsi-meet.min.js"></script>
+#}
+
+<script src='https://meet.jit.si/external_api.js'></script> 
+<script  src='/jitsi/static/js/jitsi.js'></script>
+
+{% endblock %} 
+{% block page %}
+
+<q-card>
+    <q-card-section>
+    <h5 class="text-subtitle1 q-mt-none q-mb-md">
+      Jitsi on {{SITE_TITLE}}
+    </h5>
+    <q-card v-model = 'jitsiPanel.show' id='meet' style='height:500px'>
+    </q-card>
+    {# <q-separator class="q-my-lg"></q-separator> #}
+    {# A magical "g" is always available, with info about the user, wallets and
+      extensions:
+      <code class="text-caption">{% raw %}{{ JSON.stringify(g) }}{% endraw %}</code>
+
+      #}
+  </q-card-section>
+</q-card>
+
+<q-dialog v-model="setupDialog.show">
+    <q-card class="q-pa-lg q-pt-xl" style="width: 500px">
+      <q-form @submit="sendSetupFormData" class="q-gutter-md">
+        <q-input
+          filled
+          dense
+          v-model.trim = "setupDialog.data.roomName"
+          type  = "text"
+          label = "Meeting name"
+          :rules = "[value => value.length > 0 || 'The meeting must have a name!']"
+          > 
+        </q-input>
+        <q-btn
+          unelevated
+          color="primary"
+          type="submit">
+            Start Jitsi meeting 
+        </q-btn>
+      </q-form>
+    </q-card>
+  </q-dialog>
+
+{% endblock %}
