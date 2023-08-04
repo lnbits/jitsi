@@ -1,4 +1,4 @@
-// TODO(nochiel) Handle errors from LNBits.api calls. 
+// TODO(nochiel) Handle errors from LNBits.api calls.
 // - Which errors should the host user see?
 
 // FIXME(nochiel) Cleanup: Use consistent language for:
@@ -41,7 +41,7 @@ const app = new Vue({
 
     data: function() {
 
-        return {  
+        return {
             api         : null,
             conference  : null,     // The jitsi id of the current conference.
             wallet      : null,
@@ -54,9 +54,9 @@ const app = new Vue({
 
             jitsiPanel  : {
                 show : false,
-                data : {},    
+                data : {},
             }
-        }; 
+        };
 
     },
 
@@ -64,30 +64,34 @@ const app = new Vue({
 
         setupJitsi () {
 
-            let domain = 'meet.jit.si';
+            // Ref. https://developer.8x8.com/jaas/docs/iframe-api-integration
 
-            // let random = Math.floor(Math.random() * 0xFFFFFFFF);    // Use this to generate insecure unique ids. 
-            // 'tenant' is only relevant if the user is running their own Jitsi server. 
-            // We would want to use the 'tenant' option to allow the LNBits user to run multiple conferences simultaneously. 
+            const domain = '8x8.vc';    // 'meet.jit.si';
+
+            // let random = Math.floor(Math.random() * 0xFFFFFFFF);    // Use this to generate insecure unique ids.
+            // 'tenant' is only relevant if the user is running their own Jitsi server.
+            // We would want to use the 'tenant' option to allow the LNBits user to run multiple conferences simultaneously.
             // Ref. https://digitalguardian.com/blog/saas-single-tenant-vs-multi-tenant-whats-difference
-            // let tenant = `tenant_${random}`;  
+            // let tenant = `tenant_${random}`;
 
+            log('User config: ', this.setupDialog.data);
             const options = {
-                roomName: this.setupDialog.data.roomName ?? `LNBits-${random}`,     // FIXME(nochiel) Generate a unique default room name. 
-                parentNode: document.querySelector('#meet'),   // ref. templates/jitsi/index.html 
+                roomName: `${this.setupDialog.data.appId}/${this.setupDialog.data.roomName}`,
+                jwt: this.setupDialog.jwt,
+                parentNode: document.querySelector('#meet'),   // ref. templates/jitsi/index.html
                 height: '700px',         // FIXME(nochiel) Make this 75% of the viewport.
                 // chromeExtensionBanner: {},       // FIXME(nochiel) Does nothing.
-                configOverwrite : { 
-                // apiLogLevels: ['warn', 'log', 'error', 'info', 'debug'],     // see: https://github.com/jitsi/jitsi-meet/blob/master/config.js 
-                },    
+                configOverwrite : {
+                // apiLogLevels: ['warn', 'log', 'error', 'info', 'debug'],     // see: https://github.com/jitsi/jitsi-meet/blob/master/config.js
+                },
                 // onload : jitsiOnload,       // FIXME(nochiel) Goes nowhere does nothing.
                 // interfaceConfigOverwrite: {};    // see: https://github.com/jitsi/jitsi-meet/blob/master/interface_config.js
             };
 
-            log('jitsi options: ', options);
+            log('Jitsi options: ', options);
 
             // TODO(nochiel) Use this.g.user to set the administrator participant's details.
-            log('LnBits user: ', this.g.user);
+            log('LNBits user: ', this.g.user);
 
             this.api = new JitsiMeetExternalAPI(domain, options);
             this.jitsiPanel.show = true;
@@ -99,11 +103,11 @@ const app = new Vue({
             api.on('videoConferenceJoined', this.videoConferenceJoined);
             api.on('participantJoined', this.newParticipant);
             api.on('incomingMessage', this.incomingMessage);
-            // api.on('chatUpdated', this.chatUpdated);        
+            // api.on('chatUpdated', this.chatUpdated);
 
-            // FIXME(nochiel) Why don't these work? 
+            // FIXME(nochiel) Why don't these work?
             // api.on('errorOccurred', function (data) { console.error('error in Jitsi'); });
-            api.on('log', event  => { log(`logging[${event.logLevel}`, ...event.args); });     
+            api.on('log', event  => { log(`logging[${event.logLevel}`, ...event.args); });
 
         },
 
@@ -116,7 +120,7 @@ const app = new Vue({
 
         async test() {
             // TODO(nochiel) Tests for all api flows.
-            
+
             NOTIMPLEMENTED();
 
         },
@@ -189,9 +193,9 @@ const app = new Vue({
 
             // FIXME(nochiel) The bot is run as the host. Ideally, the bot should be an independent participant.
             // FIXME(nochiel) If the host (local user) leaves the chat, we have no way of knowing infallibly
-            // which commands have already been processed. Therefore, we should log messages and send a sentinel 
+            // which commands have already been processed. Therefore, we should log messages and send a sentinel
             // message into group chat. The sentinel contains a timestsamp of the last processed message.
-            // When the host joins the conference, check the log for the number of messages saved. 
+            // When the host joins the conference, check the log for the number of messages saved.
             // Start processing messages after the n + 1 message.
 
 
@@ -216,10 +220,10 @@ const app = new Vue({
             };
 
             const logChatMessage = async (event) => {
-                // FIXME(nochiel) If the host leaves then rejoins the conference, he has to reprocess all the events all over again because he is sent the whole chatlog. 
+                // FIXME(nochiel) If the host leaves then rejoins the conference, he has to reprocess all the events all over again because he is sent the whole chatlog.
                 // - Save a conference timestamp and don't process messages before that timestamp.
                 // - How do we filter out old messages without accidentally ignoring old messages?
-                // - The host can send themselves a private timestamp every time he receives a message. 
+                // - The host can send themselves a private timestamp every time he receives a message.
                 // - Or: create a participant who is the chatbot. The host can then send logs to the chatbot.
                 // FIXME(nochiel) Upstream: events should have a timestamp. We need to know when a chat message was sent.
 
@@ -287,10 +291,10 @@ const app = new Vue({
 
                                                         assert(data);
                                                         log('incomingMessage.getInvoice: createInvoice response.data: ', data);
-                                                        assert(data.payment_request);  
+                                                        assert(data.payment_request);
 
-                                                        let result = { 
-                                                            paymentRequest: data.payment_request, 
+                                                        let result = {
+                                                            paymentRequest: data.payment_request,
                                                             qrCode: null,       // TODO(nochiel)
                                                         };
 
@@ -312,7 +316,7 @@ const app = new Vue({
                                         switch (command) {
 
 
-                                            case 'help': { 
+                                            case 'help': {
 
                                                 sendChatMessage(message.from,
                                                     'To run a command, send a chat message starting with a "/" followed by the command name:' + '\n\n' +
@@ -337,7 +341,7 @@ const app = new Vue({
                                                 // TODO(nochiel) Show how to donate to LNbits.
                                                 // TODO(nochiel) Show how to donate to @nochiel or whomever is working on the Jitsi extension.
                                                 log('incomingMessage: donate: ');
-                                                NOTIMPLEMENTED();       
+                                                NOTIMPLEMENTED();
 
                                             }; break;
 
@@ -361,13 +365,13 @@ const app = new Vue({
                                                 }
 
                                                 let amount = Number(words[1])
-                                                if(isNaN(amount) || amount <= 0) { 
+                                                if(isNaN(amount) || amount <= 0) {
                                                     sendChatMessage(message.from, `The amount you entered is "${words[1]}" but it is not a valid amount!`);
                                                     sendChatMessage(message.from, HELPDEPOSITSYNTAX);
-                                                    return; 
+                                                    return;
                                                 }
 
-                                                let name = participants.find(p => p.participantId == message.from) 
+                                                let name = participants.find(p => p.participantId == message.from)
                                                 ?.displayName;
                                                 let memo = `Deposit for "${name}" in the "${this.conference}" Jitsi conference call.`;
                                                 if(2 in words) { memo = words.slice(2).join(' ') }
@@ -401,10 +405,10 @@ const app = new Vue({
 
                                                 let amount = 0;
                                                 amount = Number(words[1]);
-                                                if(isNaN(amount) || amount <= 0) { 
+                                                if(isNaN(amount) || amount <= 0) {
                                                     sendChatMessage(payer.id, `The amount you entered is "${words[1]}" but it is not a valid amount!`);
                                                     sendChatMessage(payer.id, HELPSYNTAXMESSAGE);
-                                                    return; 
+                                                    return;
                                                 }
 
                                                 const payerName = participants.find(p => p.participantId == payer.id)
@@ -422,7 +426,7 @@ const app = new Vue({
                                                 let memo;
                                                 if (3 in words) { memo = words.slice(3).join(' '); }
 
-                                                const pay = async (payer, wallet, amount, payeeId, memo) => 
+                                                const pay = async (payer, wallet, amount, payeeId, memo) =>
 
                                                     getInvoice(payeeId, amount, memo)
                                                         .then(invoice => {
@@ -433,7 +437,7 @@ const app = new Vue({
                                                             if(wallet.sat < amount) {
 
 
-                                                                sendChatMessage(payer.id, 
+                                                                sendChatMessage(payer.id,
                                                                     `You don't have enough sats to send that amount from your LNbits wallet. Your balance is ${wallet.sat}.`);
                                                                 sendChatMessage(payer.id, HELPBALANCE);
                                                                 sendChatMessage(payer.id, HELPDEPOSIT);
@@ -462,8 +466,8 @@ const app = new Vue({
 
                                                         if(payment_hash) {
                                                             log(`incomingMessage.pay: Payment(${payment_hash}) from ${participant.id} to ${payee} for ${amount} sats.`);
-                                                            sendChatMessage(payee, `${payerName} has paid you ${amount} sats.`);        
-                                                            sendChatMessage(participant.id, `You have paid ${payeeName} ${amount} sats.`);        
+                                                            sendChatMessage(payee, `${payerName} has paid you ${amount} sats.`);
+                                                            sendChatMessage(participant.id, `You have paid ${payeeName} ${amount} sats.`);
                                                         }
                                                     })
                                                     .catch(e => {
@@ -497,18 +501,18 @@ const app = new Vue({
                 */
 
             // The host can exit and rejoin the conference mmultiple times.
-            // - Rejoining creates a new jitsi participant id. 
-            //          
+            // - Rejoining creates a new jitsi participant id.
+            //
             //          - If we create a new wallet, is there a way to make sure that the LNBits user has access to all their wallets? Ans. Yes, just make sure that we create a new wallet for the lnbits user. i.e. don't create a new user.
 
             if(!this._isMounted) return;
             log('videoConferenceJoined: ', event);
-            assert(event.roomName);     
+            assert(event.roomName);
             this.conference = event.roomName;
             this.wallet = this.g.user.wallets[0];
 
             data = {
-                conferenceId: event.roomName,     
+                conferenceId: event.roomName,
                 admin: event.id,
             };
             LNbits.api
@@ -524,7 +528,7 @@ const app = new Vue({
                     let conference = response.data;
                     if(conference.name) {
                         assert(conference.name,
-                            `the conference in the response is invalid. conference.name: "${conference.name}"`); 
+                            `the conference in the response is invalid. conference.name: "${conference.name}"`);
                         this.getParticipant(conference.name, event.id)
                             .then(async admin => {
 
@@ -568,7 +572,7 @@ const app = new Vue({
 
         async getParticipant(conference, participant) {
             /*
-                returns: { 
+                returns: {
                     id: str
                     conference: str
                     user: str
@@ -611,12 +615,6 @@ const app = new Vue({
                 */
             if(!this._isMounted) return;
 
-            // FIXME(nochiel) Unique nicknames: Prevent participants from having the same displayName. 
-            // - When a new participant joins, if they choose a nick that is already in use,
-            // append an ordinal to the name.
-            // - If the participant does not have a nick, give them a standard name with an ordinal. 
-            // The Jitsi api doesn't allow us to rename participants so we can't actually fix this problem.
-
             assert(event.id);
             log('newParticipant: id: ', event.id);
 
@@ -626,7 +624,7 @@ const app = new Vue({
                 log(`newParticipant: creating ${event.id} in conference ${this.conference}`);
 
                 let participant = await this.getParticipant(this.conference, event.id);
-                log('newParticipant: got participant: ', participant);
+                participant && log('newParticipant: got participant: ', participant);
                 if(!participant) {
 
                     let data = { id: event.id };
@@ -638,7 +636,7 @@ const app = new Vue({
                             data
                         )
                         .then(response => {
-                            log('newParticipant: result: ', response.data);
+                            log('newParticipant result: ', response.data);
                         })
                         .catch(e => {
                             // TODO(nochiel) Show the admin an error.

@@ -1,11 +1,11 @@
 {% extends "base.html" %} {% from "macros.jinja" import window_vars with context
 %}
-{% block scripts %} {{ window_vars(user) }} 
+{% block scripts %} {{ window_vars(user) }}
 
-<script src='https://meet.jit.si/external_api.js'></script> 
+<script src='https://8x8.vc/external_api.js'></script>
 <script  src='/jitsi/static/js/jitsi.js'></script>
 
-{% endblock %} 
+{% endblock %}
 {% block page %}
 
 <q-card>
@@ -34,13 +34,31 @@
           type  = "text"
           label = "Meeting name"
           :rules = "[value => value.length > 0 || 'The meeting must have a name!']"
-          > 
+          >
+        </q-input>
+        <q-input
+          filled
+          dense
+          v-model.trim = "setupDialog.data.appId"
+          type  = "text"
+          label = "Your Jitsi AppID"
+          :rules = "[value => value.length > 0 || 'We need a Jitsi application id in order to use Jitsi as a Service!']"
+          >
+        </q-input>
+        <q-input
+          filled
+          dense
+          v-model.trim = "setupDialog.data.jwt"
+          type  = "text"
+          label = "Your Jaas JWT Tokeen"
+          :rules = "[value => value.length > 0 || 'We need a JWT token in order to use Jitsi as a Service!']"
+          >
         </q-input>
         <q-btn
           unelevated
           color="primary"
           type="submit">
-            Start Jitsi meeting 
+            Start Jitsi meeting
         </q-btn>
       </q-form>
     </q-card>
