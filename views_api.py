@@ -11,7 +11,7 @@
 
 from fastapi import Query
 from fastapi.params import Depends
-from starlette.exceptions import HTTPException
+from fastapi.exceptions import HTTPException
 
 from http import HTTPStatus
 
@@ -31,7 +31,6 @@ from lnbits.decorators import (
 
 from lnbits.core.services import (
         create_invoice,
-        check_invoice_status,
         pay_invoice,
 )
 
